@@ -64,13 +64,8 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
     showToast('Starting high-speed proxy download...', 'info');
     const downloadUrl = `/api/stream?url=${encodeURIComponent(streamUrl)}&download=true&title=${encodeURIComponent(fileName)}`;
     
-    // Create a temporary anchor element to trigger the download cleanly
-    const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    // Use window.open to reliably trigger the Content-Disposition attachment download
+    window.open(downloadUrl, '_blank');
   }, [streamUrl, fileName, showToast]);
 
   // Proxied streaming route URL

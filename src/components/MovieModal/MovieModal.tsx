@@ -86,14 +86,9 @@ export default function MovieModal({ detailUrl, onClose, onStreamPlay }: MovieMo
           onStreamPlay(data.downloadUrl);
           showToast('Starting high-speed stream...', 'info');
         } else {
-          // Trigger high-speed proxy-accelerated download directly
+          // Trigger high-speed proxy-accelerated download
           const downloadUrl = `/api/stream?url=${encodeURIComponent(data.downloadUrl)}&download=true&title=${encodeURIComponent(data.fileName || fileName)}`;
-          const a = document.createElement('a');
-          a.href = downloadUrl;
-          a.download = data.fileName || fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          window.open(downloadUrl, '_blank');
           showToast('Download started', 'success');
         }
       } else {

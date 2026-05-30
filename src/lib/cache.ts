@@ -109,14 +109,26 @@ export async function getFileMetadata(streamUrl: string, hash: string): Promise<
         validateStatus: (status: number) => status === 200 || status === 206,
       });
     } catch {
-      getRes = await axios.get(streamUrl, {
-        headers: { 'User-Agent': AXIOS_CONFIG.headers['User-Agent'], Range: 'bytes=0-0' },
-        responseType: 'stream',
-        timeout: 10000,
-        httpAgent: keepAliveHttpAgent,
-        httpsAgent: keepAliveAgent,
-        validateStatus: (status: number) => status === 200 || status === 206,
-      });
+      try {
+        getRes = await axios.get(streamUrl, {
+          headers: { 'User-Agent': AXIOS_CONFIG.headers['User-Agent'], Range: 'bytes=0-0' },
+          responseType: 'stream',
+          timeout: 10000,
+          httpAgent: keepAliveHttpAgent,
+          httpsAgent: keepAliveAgent,
+          validateStatus: (status: number) => status === 200 || status === 206,
+        });
+      } catch {
+        // Final fallback: plain GET without Range header
+        getRes = await axios.get(streamUrl, {
+          headers: { 'User-Agent': AXIOS_CONFIG.headers['User-Agent'] },
+          responseType: 'stream',
+          timeout: 15000,
+          httpAgent: keepAliveHttpAgent,
+          httpsAgent: keepAliveAgent,
+          validateStatus: (status: number) => status >= 200 && status < 400,
+        });
+      }
     }
 
     if (getRes.status === 206 || getRes.headers['content-range']) {
@@ -125,11 +137,15 @@ export async function getFileMetadata(streamUrl: string, hash: string): Promise<
       if (match) totalSize = parseInt(match[1], 10);
     }
 
+    if (getRes.headers['accept-ranges'] === 'bytes') {
+      supportsRanges = true;
+    }
+
     if (!totalSize && getRes.headers['content-length']) {
       totalSize = parseInt(getRes.headers['content-length'], 10);
     }
     if (getRes.headers['content-type']) {
-      contentType = getRes.headers['content-type'];
+      contentType = getRes.headers['content-type'].split(';')[0].trim();
     }
     if (getRes.data && typeof getRes.data.destroy === 'function') {
       getRes.data.destroy();

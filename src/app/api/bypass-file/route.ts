@@ -35,12 +35,15 @@ export async function GET(request: NextRequest) {
       const href = $(el).attr('href') || '';
       if (
         href.includes('video-gen.xyz') ||
+        href.includes('video-seed.pro') ||
         href.includes('driveseed') ||
         href.includes('drive.google') ||
         href.includes('pixeldrain') ||
-        href.includes('tgseed.link')
+        href.includes('tgseed.link') ||
+        href.includes('technorozen') ||
+        href.includes('hubcloud')
       ) {
-        if (href.includes('instant') || href.includes('cdn')) {
+        if (href.includes('instant') || href.includes('cdn') || href.includes('direct')) {
           directDownloadLink = href;
           return false;
         }
@@ -82,14 +85,22 @@ export async function GET(request: NextRequest) {
         httpAgent: keepAliveHttpAgent,
         httpsAgent: keepAliveAgent,
         validateStatus: () => true,
+        // Don't download body — we only need the final URL
+        responseType: 'stream',
       });
 
+      // Get the final URL after all redirects
       const resolvedUrl =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (redirectRes.request as any).res?.responseUrl ||
-        redirectRes.config.url ||
+        redirectRes.request?.res?.responseUrl ||
+        redirectRes.request?.responseURL ||
+        redirectRes.config?.url ||
         directDownloadLink;
       console.log(`[File Bypasser API] Resolved final redirect URL: ${resolvedUrl}`);
+
+      // Destroy the stream immediately since we only needed the URL
+      if (redirectRes.data && typeof redirectRes.data.destroy === 'function') {
+        redirectRes.data.destroy();
+      }
 
       const parsedUrl = new URL(resolvedUrl);
       const rawUrlParam = parsedUrl.searchParams.get('url');

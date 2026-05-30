@@ -79,12 +79,19 @@ export async function GET(request: NextRequest) {
 
     const applyDownloadHeader = (h: Headers) => {
       if (download) {
-        const ext = contentType.split('/').pop() || 'mp4';
-        let safeTitle = title.replace(/[^a-zA-Z0-9_.-]/g, '_');
-        if (!safeTitle.toLowerCase().endsWith(`.${ext}`)) {
+        let safeTitle = title.replace(/[^a-zA-Z0-9_.\-\s()[\]]/g, '_').trim();
+        // Check if title already has a valid video extension
+        const hasExtension = /\.(mp4|mkv|avi|webm|mov|flv|wmv|ts)$/i.test(safeTitle);
+        if (!hasExtension) {
+          // Derive extension from content type, defaulting to mp4
+          const ctLower = contentType.toLowerCase();
+          let ext = 'mp4';
+          if (ctLower.includes('matroska') || ctLower.includes('x-mkv')) ext = 'mkv';
+          else if (ctLower.includes('webm')) ext = 'webm';
+          else if (ctLower.includes('avi')) ext = 'avi';
           safeTitle = `${safeTitle}.${ext}`;
         }
-        h.set('Content-Disposition', `attachment; filename="${safeTitle}"`);
+        h.set('Content-Disposition', `attachment; filename="${safeTitle}"; filename*=UTF-8''${encodeURIComponent(safeTitle)}`);
       }
     };
 

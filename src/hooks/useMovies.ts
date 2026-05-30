@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Movie, SourceKey } from '@/types/movie';
 
 interface UseMoviesParams {
@@ -27,54 +27,55 @@ export function useMovies({ source, page, search }: UseMoviesParams): UseMoviesR
   const [error, setError] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [fetchKey, setFetchKey] = useState(0);
+  const abortRef = useRef<AbortController | null>(null);
 
   const refetch = useCallback(() => {
     setFetchKey((k) => k + 1);
   }, []);
 
-  // Trigger fetch on param changes
-  useState(() => {
-    // This is intentionally left empty — the actual fetch is below
-  });
-
-  // Use fetchKey as a way to force re-fetch
-  const fetchMovies = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const url = `/api/movies?source=${source}&page=${page}&search=${encodeURIComponent(search)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.success) {
-        setMovies(data.movies);
-        setHasNextPage(data.hasNextPage);
-      } else {
-        throw new Error(data.message || 'Unknown error occurred.');
-      }
-    } catch (err) {
-      setError((err as Error).message);
-      setMovies([]);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    // Cancel previous in-flight request
+    if (abortRef.current) {
+      abortRef.current.abort();
     }
-  }, [source, page, search]);
 
-  // Auto-fetch on mount and parameter changes
-  // Using a ref-based approach to avoid stale closure issues
-  useState(() => {
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const fetchMovies = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const url = `/api/movies?source=${source}&page=${page}&search=${encodeURIComponent(search)}`;
+        const response = await fetch(url, { signal: controller.signal });
+        const data = await response.json();
+
+        if (controller.signal.aborted) return;
+
+        if (data.success) {
+          setMovies(data.movies);
+          setHasNextPage(data.hasNextPage);
+        } else {
+          throw new Error(data.message || 'Unknown error occurred.');
+        }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+        setError((err as Error).message);
+        setMovies([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchMovies();
-  });
 
-  // Re-fetch whenever fetchKey or params change
-  // We use a manual effect pattern
-  const [lastParams, setLastParams] = useState({ source, page, search, fetchKey });
-
-  if (lastParams.source !== source || lastParams.page !== page || lastParams.search !== search || lastParams.fetchKey !== fetchKey) {
-    setLastParams({ source, page, search, fetchKey });
-    fetchMovies();
-  }
+    return () => {
+      controller.abort();
+    };
+  }, [source, page, search, fetchKey]);
 
   return { movies, loading, error, hasNextPage, refetch };
 }
