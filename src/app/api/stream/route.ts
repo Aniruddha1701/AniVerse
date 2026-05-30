@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
 
     const cacheKey = searchParams.get('key') || streamUrl;
     const hash = hashUrl(cacheKey);
+    const download = searchParams.get('download') === 'true';
+    const title = searchParams.get('title') || 'Video';
 
     // 1. Resolve file metadata
     let metadata;
@@ -75,6 +77,17 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const applyDownloadHeader = (h: Headers) => {
+      if (download) {
+        const ext = contentType.split('/').pop() || 'mp4';
+        let safeTitle = title.replace(/[^a-zA-Z0-9_.-]/g, '_');
+        if (!safeTitle.toLowerCase().endsWith(`.${ext}`)) {
+          safeTitle = `${safeTitle}.${ext}`;
+        }
+        h.set('Content-Disposition', `attachment; filename="${safeTitle}"`);
+      }
+    };
+
     const CACHE_DIR = getCacheDir();
 
     // A. HYBRID ROUTE: NON-RANGE-SUPPORTING STREAMING
@@ -110,6 +123,7 @@ export async function GET(request: NextRequest) {
         if (isRangeRequest) {
           headers.set('Content-Range', `bytes ${start}-${end}/${totalSize}`);
         }
+        applyDownloadHeader(headers);
 
         return new Response(stream, {
           status: isRangeRequest ? 206 : 200,
@@ -141,14 +155,17 @@ export async function GET(request: NextRequest) {
             },
           });
 
+          const tempHeaders = new Headers({
+            'Content-Type': contentType,
+            'Accept-Ranges': 'bytes',
+            'Content-Range': `bytes ${start}-${chunkEnd}/${totalSize}`,
+            'Content-Length': contentLength.toString(),
+          });
+          applyDownloadHeader(tempHeaders);
+
           return new Response(stream, {
             status: 206,
-            headers: {
-              'Content-Type': contentType,
-              'Accept-Ranges': 'bytes',
-              'Content-Range': `bytes ${start}-${chunkEnd}/${totalSize}`,
-              'Content-Length': contentLength.toString(),
-            },
+            headers: tempHeaders,
           });
         }
       }
@@ -202,6 +219,7 @@ export async function GET(request: NextRequest) {
       if (isRangeRequest) {
         responseHeaders.set('Content-Range', `bytes ${start}-${end}/${totalSize}`);
       }
+      applyDownloadHeader(responseHeaders);
 
       return new Response(stream, {
         status: isRangeRequest ? 206 : 200,
@@ -269,6 +287,7 @@ export async function GET(request: NextRequest) {
     if (isRangeRequest) {
       headers.set('Content-Range', `bytes ${start}-${end}/${totalSize}`);
     }
+    applyDownloadHeader(headers);
 
     return new Response(stream, {
       status: isRangeRequest ? 206 : 200,

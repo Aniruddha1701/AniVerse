@@ -123,82 +123,15 @@
   transform: translateY(-1px);
 }
 
-.vlcBtn {
+.downloadBtn {
   background: var(--accent-gold);
   color: var(--bg-main);
   border-color: var(--accent-gold);
 }
 
-.vlcBtn:hover {
+.downloadBtn:hover {
   background: #fbbf24;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-}
-
-/* VLC Fallback Overlay */
-.vlcFallback {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #08080c;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  text-align: center;
-  z-index: 5;
-}
-
-.fallbackIcon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.fallbackTitle {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  font-family: var(--font-display);
-}
-
-.fallbackText {
-  font-size: 13px;
-  color: var(--text-muted);
-  max-width: 440px;
-  margin-bottom: 24px;
-  line-height: 1.6;
-}
-
-.fallbackActions {
-  display: flex;
-  gap: 12px;
-}
-
-.setupLink {
-  margin-top: 18px;
-  font-size: 11px;
-  color: var(--accent-gold);
-  text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  background: rgba(245, 158, 11, 0.04);
-  border: 1px dashed rgba(245, 158, 11, 0.4);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.setupLink:hover {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: var(--accent-gold);
-  transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {
