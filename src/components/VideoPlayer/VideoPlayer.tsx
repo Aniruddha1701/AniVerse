@@ -16,7 +16,33 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { showToast } = useToast();
 
-  const fileName = decodeURIComponent(streamUrl.split('/').pop() || 'Video');
+  // Extract a clean file name from the stream URL
+  const getCleanFileName = () => {
+    try {
+      const urlObj = new URL(streamUrl);
+      const pathname = urlObj.pathname;
+      const lastPart = pathname.substring(pathname.lastIndexOf('/') + 1);
+      if (lastPart) {
+        const decoded = decodeURIComponent(lastPart).split('?')[0].split('#')[0];
+        if (decoded && decoded !== 'stream') return decoded;
+      }
+      // If path is generic (like /api/stream), grab the inner bypassed URL
+      const innerUrl = urlObj.searchParams.get('url');
+      if (innerUrl) {
+        const innerUrlObj = new URL(innerUrl);
+        const innerPath = innerUrlObj.pathname;
+        const innerLastPart = innerPath.substring(innerPath.lastIndexOf('/') + 1);
+        if (innerLastPart) {
+          return decodeURIComponent(innerLastPart).split('?')[0].split('#')[0];
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    return decodeURIComponent(streamUrl.split('/').pop() || 'Video').split('?')[0].split('#')[0];
+  };
+
+  const fileName = getCleanFileName();
   const ext = fileName.split('.').pop()?.toLowerCase() || '';
 
   // Standard browsers don't support MKV natively
@@ -42,34 +68,51 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
     // Construct the absolute streaming proxy URL
     const absoluteStreamUrl = `${window.location.origin}/api/stream?url=${encodeURIComponent(streamUrl)}`;
 
-    // Direct VLC deep link launch for both desktop and mobile
-    const vlcDeepLink = `vlc://${absoluteStreamUrl}`;
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = /android/.test(ua);
+    const isIOS = /ipad|iphone|ipod/.test(ua) && !(window as any).MSStream;
+
+    let targetUrl = '';
+
+    if (isAndroid) {
+      // 1. Direct VLC Intent launch for Android
+      // This is the officially supported Android deep link structure that bypasses browser prompts
+      const urlWithoutProtocol = absoluteStreamUrl.replace(/^https?:\/\//, '');
+      const protocol = absoluteStreamUrl.startsWith('https') ? 'https' : 'http';
+      targetUrl = `intent://${urlWithoutProtocol}#Intent;package=org.videolan.vlc;scheme=${protocol};type=video/*;end;`;
+    } else if (isIOS) {
+      // 2. iOS VLC Custom scheme
+      targetUrl = `vlc://${absoluteStreamUrl}`;
+    } else {
+      // 3. Desktop / Others: Attempt standard custom scheme launch
+      targetUrl = `vlc://${absoluteStreamUrl}`;
+    }
 
     const start = Date.now();
     let launched = false;
 
-    // 1. Listen for browser window blur (means protocol launch popup appeared/app opened)
+    // Listen for browser window blur (indicates application or OS prompt gained focus)
     const handleBlur = () => {
       launched = true;
     };
     window.addEventListener('blur', handleBlur);
 
-    // 2. Try the direct deep link protocol
-    window.location.href = vlcDeepLink;
+    // Navigate to protocol link
+    window.location.href = targetUrl;
 
-    // 3. Set a safety timeout fallback
+    // Fallback safety timeout
     setTimeout(() => {
       window.removeEventListener('blur', handleBlur);
 
-      // If no blur occurred and time spent is short, the protocol is not registered
+      // If page did not blur and duration is normal, redirect failed or unregistered
       if (!launched && Date.now() - start < 1500) {
         showToast('Direct launch failed. Downloading VLC playlist...', 'warning');
         
-        // Fallback to downloading the .m3u playlist
+        // Trigger download of generated dynamic .m3u playlist
         const playlistUrl = `/api/play-in-vlc?url=${encodeURIComponent(streamUrl)}&title=${encodeURIComponent(fileName)}`;
         window.location.href = playlistUrl;
       } else {
-        showToast('VLC launched successfully!', 'success');
+        showToast('VLC opened successfully!', 'success');
       }
       setIsPlayingInVlc(false);
     }, 1200);
