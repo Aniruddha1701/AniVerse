@@ -122,6 +122,69 @@ export async function GET(request: NextRequest) {
     }
     const sid = decodeURIComponent(sidMatch[1]);
 
+    // Check if the SID itself is a base64 encoded destination URL
+    let decodedUrl = '';
+    try {
+      const decoded = Buffer.from(sid, 'base64').toString('utf-8');
+      if (decoded.startsWith('http://') || decoded.startsWith('https://')) {
+        decodedUrl = decoded;
+        console.log(`[Bypasser API] Successfully decoded base64 SID directly to URL: ${decodedUrl}`);
+      }
+    } catch {}
+
+    if (decodedUrl) {
+      currentUrl = decodedUrl;
+      console.log(`[Bypasser API] Bypassed Step 1-3. Direct target URL is: ${currentUrl}`);
+
+      // Direct driveseed file link check
+      if (currentUrl.includes('driveseed.org/file/')) {
+        console.log(`[Bypasser API] Direct driveseed file link detected after decoding. Fetching page...`);
+        try {
+          const filePageRes = await axios.get(currentUrl, AXIOS_CONFIG);
+          const $filePage = cheerio.load(filePageRes.data);
+          const pageTitle =
+            $filePage('title').text().replace('Download', '').replace('DriveSeed', '').trim() ||
+            currentUrl.split('/').pop() ||
+            'Download File';
+
+          return NextResponse.json({
+            success: true,
+            title: pageTitle,
+            files: [
+              {
+                name: pageTitle,
+                url: currentUrl,
+              },
+            ],
+          });
+        } catch (err) {
+          console.warn(`[Bypasser API Warning] Failed to fetch direct file page details: ${(err as Error).message}. Returning fallback...`);
+          return NextResponse.json({
+            success: true,
+            title: 'Direct File Download',
+            files: [
+              {
+                name: 'Direct DriveSeed Download Page (Browser)',
+                url: currentUrl,
+              },
+            ],
+          });
+        }
+      } else {
+        // Return other decoded URLs directly as fallback
+        return NextResponse.json({
+          success: true,
+          title: 'Direct Download Link',
+          files: [
+            {
+              name: 'Direct Download Link (Browser)',
+              url: currentUrl,
+            },
+          ],
+        });
+      }
+    }
+
     // Step 1: POST to unblockedgames
     console.log('[Bypasser API] STEP 1: POSTing SID to unblockedgames...');
     const params1 = new URLSearchParams();
