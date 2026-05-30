@@ -32,12 +32,15 @@ export async function GET(request: NextRequest) {
     // Generate the standard M3U playlist content
     const m3uContent = `#EXTM3U\n#EXTINF:-1,${title}\n${absoluteStreamUrl}\n`;
 
-    // Return the .m3u file as a direct attachment
+    // Clean up filename to remove invalid characters
+    const safeFileName = title.replace(/[^a-zA-Z0-9_.-]/g, '_');
+
+    // Return the .m3u file as a direct attachment with the clean movie filename
     return new Response(m3uContent, {
       status: 200,
       headers: {
         'Content-Type': 'audio/x-mpegurl',
-        'Content-Disposition': `attachment; filename="play_in_vlc.m3u"`,
+        'Content-Disposition': `attachment; filename="${safeFileName}.m3u"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',

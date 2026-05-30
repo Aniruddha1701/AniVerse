@@ -106,7 +106,7 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
 
       // If page did not blur and duration is normal, redirect failed or unregistered
       if (!launched && Date.now() - start < 1500) {
-        showToast('Direct launch failed. Downloading VLC playlist...', 'warning');
+        showToast('Direct launch failed. Downloading playlist... (Tip: Click Windows Setup inside player fallback for 1-click play)', 'warning');
         
         // Trigger download of generated dynamic .m3u playlist
         const playlistUrl = `/api/play-in-vlc?url=${encodeURIComponent(streamUrl)}&title=${encodeURIComponent(fileName)}`;
@@ -178,6 +178,14 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
                     Force Play in Browser
                   </button>
                 </div>
+                <a 
+                  href="/register-vlc-protocol.bat" 
+                  download 
+                  className={styles.setupLink}
+                  title="Download one-click Windows registry patch to enable seamless VLC launching"
+                >
+                  ⚡ Enable Direct 1-Click Play (Windows Setup)
+                </a>
               </div>
             ) : (
               <video

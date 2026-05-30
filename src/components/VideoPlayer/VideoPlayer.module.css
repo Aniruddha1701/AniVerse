@@ -177,6 +177,30 @@
   gap: 12px;
 }
 
+.setupLink {
+  margin-top: 18px;
+  font-size: 11px;
+  color: var(--accent-gold);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: rgba(245, 158, 11, 0.04);
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.setupLink:hover {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: var(--accent-gold);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 640px) {
   .overlay {
     padding: 12px;
