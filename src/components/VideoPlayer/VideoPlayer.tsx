@@ -37,22 +37,43 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
 
   const handlePlayInVlc = useCallback(() => {
     setIsPlayingInVlc(true);
-    showToast('Launching VLC Player directly…', 'info');
-    try {
-      // Construct the absolute streaming proxy URL
-      const absoluteStreamUrl = `${window.location.origin}/api/stream?url=${encodeURIComponent(streamUrl)}`;
+    showToast('Launching VLC Player...', 'info');
 
-      // Direct VLC deep link launch for both desktop and mobile
-      const vlcDeepLink = `vlc://${absoluteStreamUrl}`;
-      window.location.href = vlcDeepLink;
+    // Construct the absolute streaming proxy URL
+    const absoluteStreamUrl = `${window.location.origin}/api/stream?url=${encodeURIComponent(streamUrl)}`;
 
-      showToast('VLC opened successfully!', 'success');
-    } catch (err) {
-      showToast((err as Error).message, 'error');
-    } finally {
+    // Direct VLC deep link launch for both desktop and mobile
+    const vlcDeepLink = `vlc://${absoluteStreamUrl}`;
+
+    const start = Date.now();
+    let launched = false;
+
+    // 1. Listen for browser window blur (means protocol launch popup appeared/app opened)
+    const handleBlur = () => {
+      launched = true;
+    };
+    window.addEventListener('blur', handleBlur);
+
+    // 2. Try the direct deep link protocol
+    window.location.href = vlcDeepLink;
+
+    // 3. Set a safety timeout fallback
+    setTimeout(() => {
+      window.removeEventListener('blur', handleBlur);
+
+      // If no blur occurred and time spent is short, the protocol is not registered
+      if (!launched && Date.now() - start < 1500) {
+        showToast('Direct launch failed. Downloading VLC playlist...', 'warning');
+        
+        // Fallback to downloading the .m3u playlist
+        const playlistUrl = `/api/play-in-vlc?url=${encodeURIComponent(streamUrl)}&title=${encodeURIComponent(fileName)}`;
+        window.location.href = playlistUrl;
+      } else {
+        showToast('VLC launched successfully!', 'success');
+      }
       setIsPlayingInVlc(false);
-    }
-  }, [streamUrl, showToast]);
+    }, 1200);
+  }, [streamUrl, fileName, showToast]);
 
   const handleCopyLink = useCallback(() => {
     const absoluteStreamUrl = `${window.location.origin}/api/stream?url=${encodeURIComponent(streamUrl)}`;
