@@ -35,23 +35,33 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
     return () => document.removeEventListener('keydown', handleEsc);
   }, [onClose]);
 
-  const handlePlayInVlc = useCallback(async () => {
+  const handlePlayInVlc = useCallback(() => {
     setIsPlayingInVlc(true);
-    showToast('Attempting to launch VLC player…', 'info');
+    showToast('Launching VLC Player…', 'info');
     try {
-      const res = await fetch(`/api/play-in-vlc?url=${encodeURIComponent(streamUrl)}`);
-      const data = await res.json();
-      if (data.success) {
-        showToast('VLC opened successfully!', 'success');
+      // Construct the absolute streaming proxy URL
+      const absoluteStreamUrl = `${window.location.origin}/api/stream?url=${encodeURIComponent(streamUrl)}`;
+
+      // Detect mobile OS (Android, iOS, iPadOS)
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Mobile: Use direct vlc:// protocol linking
+        const vlcDeepLink = `vlc://${absoluteStreamUrl.replace(/^https?:\/\//, '')}`;
+        window.location.href = vlcDeepLink;
+        showToast('Opening in mobile VLC app…', 'success');
       } else {
-        showToast(data.message || 'VLC launcher only works on localhost.', 'warning');
+        // Desktop: Download dynamic .m3u playlist file to auto-trigger VLC
+        const playlistUrl = `/api/play-in-vlc?url=${encodeURIComponent(streamUrl)}&title=${encodeURIComponent(fileName)}`;
+        window.location.href = playlistUrl;
+        showToast('VLC playlist downloaded! Open it to play.', 'success');
       }
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
       setIsPlayingInVlc(false);
     }
-  }, [streamUrl, showToast]);
+  }, [streamUrl, fileName, showToast]);
 
   const handleCopyLink = useCallback(() => {
     const absoluteStreamUrl = `${window.location.origin}/api/stream?url=${encodeURIComponent(streamUrl)}`;
