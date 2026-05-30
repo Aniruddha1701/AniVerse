@@ -210,15 +210,6 @@ export default function MovieModal({ detailUrl, onClose, onStreamPlay }: MovieMo
                                     '🔓 Bypass Links'
                                   )}
                                 </button>
-                                <a
-                                  href={link.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={`${styles.actionBtn} ${styles.manualBtn}`}
-                                  title="Open Link Manually in Browser"
-                                >
-                                  🔗 Open Manually
-                                </a>
                               </div>
                             </div>
 
