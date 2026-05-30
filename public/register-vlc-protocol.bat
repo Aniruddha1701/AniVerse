@@ -20,7 +20,7 @@ reg add "HKCR\vlc" /ve /t REG_SZ /d "URL:VLC Protocol" /f >nul 2>&1
 reg add "HKCR\vlc" /v "URL Protocol" /t REG_SZ /d "" /f >nul 2>&1
 
 :: Construct a robust PowerShell command that auto-detects VLC's path and launches the stream URL cleanly
-set "PS_CMD=$url = '%%1' -replace '^vlc://'; $vlc = 'C:\Program Files\VideoLAN\VLC\vlc.exe'; if (-not (Test-Path $vlc)) { $vlc = 'C:\Program Files (x86)\VideoLAN\VLC\vlc.exe' }; if (Test-Path $vlc) { Start-Process $vlc $url } else { Write-Error 'VLC not found' }"
+set "PS_CMD=$inputUrl = '%%1'; if ($inputUrl -match 'url=([^&]+)') { $url = $matches[1] } else { $url = $inputUrl -replace '^vlc://', '' }; $url = [uri]::UnescapeDataString($url); $vlc = 'C:\Program Files\VideoLAN\VLC\vlc.exe'; if (-not (Test-Path $vlc)) { $vlc = 'C:\Program Files (x86)\VideoLAN\VLC\vlc.exe' }; if (Test-Path $vlc) { Start-Process -FilePath $vlc -ArgumentList $url } else { Write-Error 'VLC not found' }"
 
 reg add "HKCR\vlc\shell\open\command" /ve /t REG_SZ /d "powershell.exe -WindowStyle Hidden -Command \"%PS_CMD%\"" /f >nul 2>&1
 

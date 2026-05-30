@@ -81,11 +81,12 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
       const protocol = absoluteStreamUrl.startsWith('https') ? 'https' : 'http';
       targetUrl = `intent://${urlWithoutProtocol}#Intent;package=org.videolan.vlc;scheme=${protocol};type=video/*;end;`;
     } else if (isIOS) {
-      // 2. iOS VLC Custom scheme
-      targetUrl = `vlc://${absoluteStreamUrl}`;
+      // 2. iOS VLC Custom scheme using x-callback for safer URL parsing
+      targetUrl = `vlc-x-callback://x-callback-url/stream?url=${encodeURIComponent(absoluteStreamUrl)}`;
     } else {
       // 3. Desktop / Others: Attempt standard custom scheme launch
-      targetUrl = `vlc://${absoluteStreamUrl}`;
+      // Use encoded query parameter to prevent Chromium from corrupting https:// into https//
+      targetUrl = `vlc://play?url=${encodeURIComponent(absoluteStreamUrl)}`;
     }
 
     const start = Date.now();
