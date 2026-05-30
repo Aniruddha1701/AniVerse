@@ -65,10 +65,11 @@ export default function MovieModal({ detailUrl, onClose, onStreamPlay }: MovieMo
         setBypassResults((prev) => ({ ...prev, [linkKey]: data }));
         showToast(`Found ${data.files?.length || data.episodes?.length || 0} download links`, 'success');
       } else {
-        showToast(data.message || 'Bypass failed', 'error');
+        console.warn('[Bypass Block]', data.message);
+        showToast('Vercel IP blocked by Cloudflare! Please use "Open Manually" button.', 'warning');
       }
-    } catch (err) {
-      showToast((err as Error).message, 'error');
+    } catch {
+      showToast('Cloud hosting block! Please use "Open Manually" button.', 'warning');
     } finally {
       setBypassLoading((prev) => ({ ...prev, [linkKey]: false }));
     }
@@ -209,6 +210,15 @@ export default function MovieModal({ detailUrl, onClose, onStreamPlay }: MovieMo
                                     '🔓 Bypass Links'
                                   )}
                                 </button>
+                                <a
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`${styles.actionBtn} ${styles.manualBtn}`}
+                                  title="Open Link Manually in Browser"
+                                >
+                                  🔗 Open Manually
+                                </a>
                               </div>
                             </div>
 
