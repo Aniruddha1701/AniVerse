@@ -1,0 +1,124 @@
+.filterBar {
+  background-color: rgba(6, 6, 11, 0.4);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 0 32px;
+  position: relative;
+  z-index: 10;
+}
+
+.filterInner {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 56px;
+}
+
+.sourceTabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tabBtn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  padding: 8px 18px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.tabBtn:hover {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tabBtn.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
+  border-color: rgba(139, 92, 246, 0.25);
+  font-weight: 600;
+}
+
+.tabIcon {
+  color: inherit;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.tabBtn.active .tabIcon {
+  opacity: 1;
+}
+
+/* Legacy chip styles (kept for CSS module compatibility) */
+.filterChips { display: none; }
+.chipLabel { display: none; }
+.chip { display: none; }
+
+.viewToggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+}
+
+.viewBtn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.viewBtn:hover {
+  color: var(--text-secondary);
+}
+
+.viewBtn.active {
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--primary-text);
+}
+
+@media (max-width: 768px) {
+  .filterBar {
+    padding: 0 16px;
+  }
+  .filterInner {
+    height: auto;
+    padding: 12px 0;
+    gap: 10px;
+  }
+  .sourceTabs {
+    overflow-x: auto;
+    flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sourceTabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tabBtn {
+    padding: 7px 14px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,232 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6, 6, 11, 0.82);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0 32px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.headerInner {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 72px;
+}
+
+/* ===== BRAND ===== */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  text-decoration: none;
+  position: relative;
+}
+
+.brand:hover .logoImage {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 16px rgba(139, 92, 246, 0.5));
+}
+
+.logoImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  object-fit: cover;
+  transition: all 0.4s var(--ease-out);
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3));
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.brandName {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.brandAni {
+  background: linear-gradient(135deg, #ffffff 20%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brandVerse {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent-cyan) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brandTag {
+  display: block;
+  font-size: 9px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  font-weight: 600;
+}
+
+/* ===== SEARCH ===== */
+.searchWrap {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 48px 12px 44px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  outline: none;
+  transition: var(--transition);
+}
+
+.searchInput::placeholder {
+  color: var(--text-dim);
+  opacity: 1;
+}
+
+.searchInput:focus {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08), 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.searchInput:focus ~ .searchIcon,
+.searchWrap:focus-within .searchIcon {
+  color: var(--primary-text);
+}
+
+.searchBtn {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  padding: 4px;
+}
+
+.searchBtn:hover {
+  color: var(--primary-text);
+  transform: scale(1.1);
+}
+
+.clearBtn {
+  position: absolute;
+  right: 42px;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 3px 6px;
+  border-radius: var(--radius-full);
+  line-height: 1;
+}
+
+.clearBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* ===== RIGHT ACTIONS ===== */
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.iconBtn:hover {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: var(--primary-border);
+  color: var(--primary-text);
+  transform: translateY(-1px);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 16px;
+  }
+  .headerInner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 14px 0;
+    gap: 12px;
+  }
+  .searchWrap {
+    order: 3;
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+  .brandName {
+    font-size: 20px;
+  }
+  .brandTag {
+    font-size: 8px;
+    letter-spacing: 2px;
+  }
+  .logoImage {
+    width: 34px;
+    height: 34px;
+  }
+}

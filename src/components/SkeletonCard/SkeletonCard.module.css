@@ -1,0 +1,44 @@
+.skeleton {
+  background: rgba(22, 22, 28, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.skeletonPoster {
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonDetails {
+  padding: 16px;
+}
+
+.skeletonTitle {
+  height: 16px;
+  width: 80%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.skeletonMeta {
+  display: flex;
+  gap: 12px;
+}
+
+.skeletonText {
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.short { width: 60px; }
+.extraShort { width: 40px; }
