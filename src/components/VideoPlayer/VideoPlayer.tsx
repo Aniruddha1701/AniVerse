@@ -105,8 +105,10 @@ export default function VideoPlayer({ streamUrl, onClose }: VideoPlayerProps) {
     setTimeout(() => {
       window.removeEventListener('blur', handleBlur);
 
-      // If page did not blur and duration is normal, redirect failed or unregistered
-      if (!launched && Date.now() - start < 1500) {
+      // A launch is successful if the window blurred or document lost focus
+      const succeeded = launched || !document.hasFocus();
+
+      if (!succeeded) {
         showToast('Direct launch failed. Downloading playlist... (Tip: Click Windows Setup inside player fallback for 1-click play)', 'warning');
         
         // Trigger download of generated dynamic .m3u playlist
