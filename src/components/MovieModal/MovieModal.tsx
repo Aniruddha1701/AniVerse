@@ -75,19 +75,25 @@ export default function MovieModal({ detailUrl, onClose, onStreamPlay }: MovieMo
     }
   }, [showToast]);
 
-  const handleFileBypass = useCallback(async (url: string, fileName: string) => {
+  const handleFileBypass = useCallback(async (url: string, fileName: string, action: 'watch' | 'download') => {
     const fileKey = `file_${url}`;
     setFileBypassLoading((prev) => ({ ...prev, [fileKey]: true }));
     try {
       const res = await fetch(`/api/bypass-file?url=${encodeURIComponent(url)}`);
       const data = await res.json();
       if (data.success && data.downloadUrl) {
-        const ext = (data.fileName || '').split('.').pop()?.toLowerCase();
-        if (['mp4', 'mkv', 'webm', 'avi'].includes(ext || '')) {
+        if (action === 'watch') {
           onStreamPlay(data.downloadUrl);
-          showToast('Launching stream player…', 'info');
+          showToast('Starting high-speed stream...', 'info');
         } else {
-          window.open(`/api/proxy-download?url=${encodeURIComponent(data.downloadUrl)}&fileName=${encodeURIComponent(data.fileName || fileName)}`, '_blank');
+          // Trigger high-speed proxy-accelerated download directly
+          const downloadUrl = `/api/stream?url=${encodeURIComponent(data.downloadUrl)}&download=true&title=${encodeURIComponent(data.fileName || fileName)}`;
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = data.fileName || fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
           showToast('Download started', 'success');
         }
       } else {
@@ -216,26 +222,33 @@ export default function MovieModal({ detailUrl, onClose, onStreamPlay }: MovieMo
                             {/* Bypass Results */}
                             {bypassResults[linkKey] && (
                               <div className={styles.bypassResults}>
-                                {bypassResults[linkKey].files?.map((file, fIdx) => (
-                                  <div key={fIdx} className={styles.fileItem}>
-                                    <span className={styles.fileName} title={file.name}>{file.name}</span>
-                                    <div className={styles.fileActions}>
-                                      <button
-                                        className={`${styles.fileBtn} ${styles.downloadBtn}`}
-                                        onClick={() => handleFileBypass(file.url, file.name)}
-                                        disabled={fileBypassLoading[`file_${file.url}`]}
-                                      >
-                                        {fileBypassLoading[`file_${file.url}`] ? '⏳' : '📥'} Get
-                                      </button>
-                                      <button
-                                        className={`${styles.fileBtn} ${styles.copyBtn}`}
-                                        onClick={() => handleCopyLink(file.url)}
-                                      >
-                                        📋 Copy
-                                      </button>
-                                    </div>
-                                  </div>
-                                ))}
+                                 {bypassResults[linkKey].files?.map((file, fIdx) => (
+                                   <div key={fIdx} className={styles.fileItem}>
+                                     <span className={styles.fileName} title={file.name}>{file.name}</span>
+                                     <div className={styles.fileActions}>
+                                       <button
+                                         className={`${styles.fileBtn} ${styles.streamBtn}`}
+                                         onClick={() => handleFileBypass(file.url, file.name, 'watch')}
+                                         disabled={fileBypassLoading[`file_${file.url}`]}
+                                       >
+                                         {fileBypassLoading[`file_${file.url}`] ? '⏳' : '📺'} Watch
+                                       </button>
+                                       <button
+                                         className={`${styles.fileBtn} ${styles.downloadBtn}`}
+                                         onClick={() => handleFileBypass(file.url, file.name, 'download')}
+                                         disabled={fileBypassLoading[`file_${file.url}`]}
+                                       >
+                                         {fileBypassLoading[`file_${file.url}`] ? '⏳' : '📥'} Download
+                                       </button>
+                                       <button
+                                         className={`${styles.fileBtn} ${styles.copyBtn}`}
+                                         onClick={() => handleCopyLink(file.url)}
+                                       >
+                                         📋 Copy
+                                       </button>
+                                     </div>
+                                   </div>
+                                 ))}
 
                                 {bypassResults[linkKey].episodes?.map((ep, eIdx) => {
                                   const epKey = `ep_${linkKey}_${eIdx}`;
@@ -262,25 +275,32 @@ export default function MovieModal({ detailUrl, onClose, onStreamPlay }: MovieMo
                                       {bypassResults[epKey] && (
                                         <div className={styles.bypassResults} style={{ marginLeft: '16px', marginTop: '6px', marginBottom: '10px' }}>
                                           {bypassResults[epKey].files?.map((file, fIdx) => (
-                                            <div key={fIdx} className={styles.fileItem}>
-                                              <span className={styles.fileName} title={file.name}>{file.name}</span>
-                                              <div className={styles.fileActions}>
-                                                <button
-                                                  className={`${styles.fileBtn} ${styles.downloadBtn}`}
-                                                  onClick={() => handleFileBypass(file.url, file.name)}
-                                                  disabled={fileBypassLoading[`file_${file.url}`]}
-                                                >
-                                                  {fileBypassLoading[`file_${file.url}`] ? '⏳' : '📥'} Get
-                                                </button>
-                                                <button
-                                                  className={`${styles.fileBtn} ${styles.copyBtn}`}
-                                                  onClick={() => handleCopyLink(file.url)}
-                                                >
-                                                  📋 Copy
-                                                </button>
+                                              <div key={fIdx} className={styles.fileItem}>
+                                                <span className={styles.fileName} title={file.name}>{file.name}</span>
+                                                <div className={styles.fileActions}>
+                                                  <button
+                                                    className={`${styles.fileBtn} ${styles.streamBtn}`}
+                                                    onClick={() => handleFileBypass(file.url, file.name, 'watch')}
+                                                    disabled={fileBypassLoading[`file_${file.url}`]}
+                                                  >
+                                                    {fileBypassLoading[`file_${file.url}`] ? '⏳' : '📺'} Watch
+                                                  </button>
+                                                  <button
+                                                    className={`${styles.fileBtn} ${styles.downloadBtn}`}
+                                                    onClick={() => handleFileBypass(file.url, file.name, 'download')}
+                                                    disabled={fileBypassLoading[`file_${file.url}`]}
+                                                  >
+                                                    {fileBypassLoading[`file_${file.url}`] ? '⏳' : '📥'} Download
+                                                  </button>
+                                                  <button
+                                                    className={`${styles.fileBtn} ${styles.copyBtn}`}
+                                                    onClick={() => handleCopyLink(file.url)}
+                                                  >
+                                                    📋 Copy
+                                                  </button>
+                                                </div>
                                               </div>
-                                            </div>
-                                          ))}
+                                            ))}
                                         </div>
                                       )}
                                     </div>
